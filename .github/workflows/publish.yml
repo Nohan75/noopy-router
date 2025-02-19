@@ -1,4 +1,6 @@
 name: Publish to NPM
+permissions:
+  contents: write
 
 on:
   push:
