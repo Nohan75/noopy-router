@@ -30,6 +30,7 @@ export class Response {
     }
 
     setHeader(name: string, value: string): void {
+        console.log('Setting header:', name, value);
         this.rawResponse.setHeader(name, value);
     }
 
@@ -40,7 +41,7 @@ export class Response {
     }
 
     send(body: any): void {
-        this.rawResponse.writeHead(this._statusCode, {'Content-Type': 'application/json'});
+        this.rawResponse.statusCode = this._statusCode;
         this.rawResponse.end(JSON.stringify(body));
     }
 }
