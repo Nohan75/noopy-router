@@ -71,7 +71,7 @@ export class Noopy {
     }
 
     public static(directory: string): any {
-        return (req: Request, res: any, next: Function) => {
+        return (req: Request, res: Response, next: Function) => {
             const filePath = path.join(directory, req.url);
             fs.stat(filePath, (err, stat: any) => {
                 if (err || !stat.isFile()) {
@@ -81,11 +81,10 @@ export class Noopy {
                 res.setHeader('Content-Type', mimeType);
                 fs.createReadStream(filePath).on('open', () => {
                     res.statusCode = 200;
-                    res.json({message: 'File found'});
                 }).on('error', () => {
                     res.statusCode = 500;
                     res.json({message: 'Error reading file'});
-                }).pipe(res);
+                }).pipe(res.getRawResponse());
             });
         }
     }

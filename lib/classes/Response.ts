@@ -25,6 +25,10 @@ export class Response {
         this._body = body;
     }
 
+    getRawResponse(): ServerResponse {
+        return this.rawResponse;
+    }
+
     setHeader(name: string, value: string): void {
         this.rawResponse.setHeader(name, value);
     }
