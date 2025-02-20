@@ -6,6 +6,9 @@ import {Request} from "./classes/Request";
 import {Response} from "./classes/Response";
 import {ModuleFactory} from "./classes/ModuleFactory";
 import {registerControllers} from "./utils/registerRoutes";
+import * as path from "path";
+import * as fs from "fs";
+import * as mime from "mime-types";
 
 export class Noopy {
     private routes: Route[] = [];
@@ -65,6 +68,26 @@ export class Noopy {
 
     public use(path: string, handler: Handler): void {
         this.routes.push({path, method: '*', handler});
+    }
+
+    public static(directory: string): any {
+        return (req: Request, res: any, next: Function) => {
+            const filePath = path.join(directory, req.url);
+            fs.stat(filePath, (err, stat: any) => {
+                if (err || !stat.isFile()) {
+                    return next();
+                }
+                const mimeType = mime.lookup(filePath) || 'application/octet-stream';
+                res.setHeader('Content-Type', mimeType);
+                fs.createReadStream(filePath).on('open', () => {
+                    res.statusCode = 200;
+                    res.json({message: 'File found'});
+                }).on('error', () => {
+                    res.statusCode = 500;
+                    res.json({message: 'Error reading file'});
+                }).pipe(res);
+            });
+        }
     }
 
     public init() {

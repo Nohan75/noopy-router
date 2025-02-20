@@ -11,9 +11,11 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "mime-types": "^2.1.35",
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^22.13.4"
   }
 }
