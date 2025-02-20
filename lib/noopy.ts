@@ -72,7 +72,7 @@ export class Noopy {
 
     public static(directory: string): any {
         return (req: Request, res: Response, next: Function) => {
-            const filePath = path.join(directory, req.url);
+            const filePath = path.join(directory, decodeURI(req.url || ''));
             fs.stat(filePath, (err, stat: any) => {
                 if (err || !stat.isFile()) {
                     return next();
@@ -91,8 +91,6 @@ export class Noopy {
 
     public init() {
         const appModule = ModuleFactory.create(this.rootModule);
-        // console.log(appModule);
-        // registerControllers(this, appModule.controllers);
         appModule.imports.forEach((importedModule: any) => {
             registerControllers(this, importedModule.controllers);
         });
