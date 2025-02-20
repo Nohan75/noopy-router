@@ -1,4 +1,6 @@
-import {ServerResponse} from "node:http";
+import {ServerResponse} from "http";
+import * as fs from "fs";
+import * as mime from "mime-types";
 
 export class Response {
     private rawResponse: ServerResponse;
@@ -43,5 +45,22 @@ export class Response {
     send(body: any): void {
         this.rawResponse.statusCode = this._statusCode;
         this.rawResponse.end(JSON.stringify(body));
+    }
+
+    sendFile(filePath: string) {
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+            if (err) {
+                this.statusCode = 404;
+                this.send('File not found');
+            }
+            const contentType = mime.lookup(filePath) || 'application/octet-stream';
+            this.setHeader('Content-Type', contentType);
+            const stream = fs.createReadStream(filePath);
+            stream.pipe(this.rawResponse);
+            stream.on('error', (error) => {
+                this.statusCode = 500;
+                this.send('Internal server error');
+            });
+        });
     }
 }

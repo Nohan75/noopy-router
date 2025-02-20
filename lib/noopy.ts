@@ -72,19 +72,12 @@ export class Noopy {
 
     public static(directory: string): any {
         return (req: Request, res: Response, next: Function) => {
-            const filePath = path.join(directory, decodeURI(req.url || ''));
-            fs.stat(filePath, (err, stat: any) => {
-                if (err || !stat.isFile()) {
-                    return next();
+            const filePath = path.join(directory, req.path);
+            fs.access(filePath, fs.constants.F_OK, (err) => {
+                if (err) {
+                    next();
                 }
-                const mimeType = mime.lookup(filePath) || 'application/octet-stream';
-                res.setHeader('Content-Type', mimeType);
-                fs.createReadStream(filePath).on('open', () => {
-                    res.statusCode = 200;
-                }).on('error', () => {
-                    res.statusCode = 500;
-                    res.json({message: 'Error reading file'});
-                }).pipe(res.getRawResponse());
+                res.sendFile(filePath);
             });
         }
     }

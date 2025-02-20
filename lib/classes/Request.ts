@@ -1,13 +1,16 @@
 import { IncomingMessage } from 'http';
-import {IncomingHttpHeaders} from "node:http";
+import {IncomingHttpHeaders} from "http";
+import {parse} from "url";
 
 export class Request {
     private rawRequest: IncomingMessage;
     private _body: any;
     public params: Record<string, string> = {};
+    public path: string = '';
 
     constructor(rawRequest: IncomingMessage) {
         this.rawRequest = rawRequest;
+        this.path = this.extractPath(rawRequest);
     }
 
     get method(): string {
@@ -40,6 +43,10 @@ export class Request {
             });
             this.rawRequest.on('error', reject);
         });
+    }
+
+    private extractPath(): string {
+        return new URL(this.url, `http://${this.headers.host}`).pathname;
     }
 
     private parseBody(): void {
