@@ -25,6 +25,10 @@ export class Response {
         this._body = body;
     }
 
+    setHeader(name: string, value: string): void {
+        this.rawResponse.setHeader(name, value);
+    }
+
     json(data: any): void {
         this.rawResponse.statusCode = this._statusCode;
         this.rawResponse.setHeader('Content-Type', 'application/json');
