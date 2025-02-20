@@ -46,6 +46,7 @@ export class Request {
     }
 
     private extractPath(req: IncomingMessage): string {
+        console.log('URL:', new URL(this.url, `http://${req.headers.host}`).pathname);
         return new URL(this.url, `http://${req.headers.host}`).pathname;
     }
 

@@ -32,7 +32,6 @@ export class Response {
     }
 
     setHeader(name: string, value: string): void {
-        console.log('Setting header:', name, value);
         this.rawResponse.setHeader(name, value);
     }
 
