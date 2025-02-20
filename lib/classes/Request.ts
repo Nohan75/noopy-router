@@ -46,7 +46,7 @@ export class Request {
     }
 
     private extractPath(req: IncomingMessage): string {
-        return new URL(req.url, `http://${req.headers.host}`).pathname;
+        return new URL(this.url, `http://${req.headers.host}`).pathname;
     }
 
     private parseBody(): void {
