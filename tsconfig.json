@@ -1,13 +1,21 @@
 {
   "compilerOptions": {
+    "module": "NodeNext",
     "target": "ES2021",
-    "module": "commonjs",
-    "strict": true,
+    "declaration": true,
+    "moduleResolution": "NodeNext",
+    "rootDir": "lib",
+    "outDir": "dist",
+    "sourceMap": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "strict": true,
+
+    "skipLibCheck": true,
+
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "types": ["node"]
   },
   "include": ["./lib/**/*"],
   "exclude": ["node_modules"]
