@@ -9,9 +9,11 @@ import {registerControllers} from "./utils/registerRoutes";
 import * as path from "path";
 import * as fs from "fs";
 import * as mime from "mime-types";
+import {Middleware} from "./types/middleware";
 
 export class Noopy {
     private routes: Route[] = [];
+    private middlewares: Middleware[] = [];
 
     constructor(private rootModule: any) {}
 
@@ -70,15 +72,15 @@ export class Noopy {
         this.routes.push({path, method: '*', handler});
     }
 
-    public static(directory: string): any {
-        return (req: Request, res: Response, next: Function) => {
-            const filePath = path.join(directory, req.path);
-            fs.access(filePath, fs.constants.F_OK, (err) => {
-                if (err) {
-                    next();
-                }
-                res.sendFile(filePath);
-            });
+    public useMiddleware(middleware: Middleware): void {
+        this.middlewares.push(middleware);
+    }
+
+    private executeMiddlewares(req: Request, res: Response, middlewares: Middleware[], index: number, finalHandler: () => void): void {
+        if (index < middlewares.length) {
+            middlewares[index](req, res, () => this.executeMiddlewares(req, res, middlewares, index + 1, finalHandler));
+        } else {
+            finalHandler();
         }
     }
 
@@ -89,20 +91,35 @@ export class Noopy {
         });
     }
 
+    public serveStatic(staticPath: string) {
+        return (req: Request, res: Response) => {
+            const filePath = path.isAbsolute(staticPath) ? path.join(staticPath, req.url || '/') : path.join(__dirname, staticPath, req.url || '/');
+            console.log('filePath:', filePath);
+
+
+        };
+    }
+
+    public useStatic(staticPath: string) {
+        this.use('/api-docs', this.serveStatic(staticPath));
+    }
+
     public listen(port: number): void {
         const server = createServer((req: IncomingMessage, res: ServerResponse) => {
             const request = new Request(req);
             const response = new Response(res);
             const matchedHandler = this.matchRoute(request.method, request.url);
 
-            if (matchedHandler) {
-                const { handler, params } = matchedHandler;
-                request.params = params;
-                handler(request, response);
-            } else {
-                response.statusCode = 404;
-                response.json({message: 'Not found'});
-            }
+            this.executeMiddlewares(request, response, this.middlewares, 0, () => {
+                if (matchedHandler) {
+                    const { handler, params } = matchedHandler;
+                    request.params = params;
+                    handler(request, response);
+                } else {
+                    response.statusCode = 404;
+                    response.json({message: 'Not found'});
+                }
+            });
         });
         server.listen(port, () => {
             console.log(`🚀 Server is running on http://localhost:${port}`);

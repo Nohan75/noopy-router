@@ -49,16 +49,31 @@ export class Response {
     sendFile(filePath: string) {
         fs.access(filePath, fs.constants.F_OK, (err) => {
             if (err) {
-                this.statusCode = 404;
-                this.send('File not found');
+                if (!this.rawResponse.writableEnded) {
+                    this.statusCode = 404;
+                    this.send('File not found');
+                }
+                return; // Retourner pour éviter toute tentative de réponse supplémentaire
             }
+
             const contentType = mime.lookup(filePath) || 'application/octet-stream';
             this.setHeader('Content-Type', contentType);
+
             const stream = fs.createReadStream(filePath);
             stream.pipe(this.rawResponse);
+
             stream.on('error', (error) => {
-                this.statusCode = 500;
-                this.send('Internal server error');
+                if (!this.rawResponse.writableEnded) { // Vérifie si la réponse n'a pas déjà été envoyée
+                    this.statusCode = 500;
+                    this.send('Internal server error');
+                }
+            });
+
+            // Assurez-vous de ne pas envoyer deux réponses pour une même requête
+            stream.on('close', () => {
+                if (!this.rawResponse.writableEnded) {
+                    this.rawResponse.end();
+                }
             });
         });
     }
