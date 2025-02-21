@@ -91,19 +91,6 @@ export class Noopy {
         });
     }
 
-    public serveStatic(staticPath: string) {
-        return (req: Request, res: Response) => {
-            const filePath = path.isAbsolute(staticPath) ? path.join(staticPath, req.url || '/') : path.join(__dirname, staticPath, req.url || '/');
-            console.log('filePath:', filePath);
-
-
-        };
-    }
-
-    public useStatic(staticPath: string) {
-        this.use('/api-docs', this.serveStatic(staticPath));
-    }
-
     public listen(port: number): void {
         const server = createServer((req: IncomingMessage, res: ServerResponse) => {
             const request = new Request(req);
